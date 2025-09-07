@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Authentication</title>
+    <title>Clerk Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +19,7 @@
             min-height: 100vh;
             padding: 1.5rem;
         }
-        .auth-container, .user-container {
+        .auth-container, .dashboard-container {
             background: white;
             border-radius: 1rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -27,7 +27,7 @@
             max-width: 400px;
             width: 100%;
         }
-        .user-container {
+        .dashboard-container {
             text-align: center;
             display: none;
         }
@@ -44,279 +44,57 @@
             font-weight: bold;
             margin: 0 auto 1.5rem;
         }
-        .modal-title {
-            color: #6c2bd9;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-        }
-        .form-submit {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: #6c2bd9;
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .form-submit:hover {
-            background-color: #a435f0;
-        }
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 1.5rem 0;
-            color: #6b7280;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .divider:not(:empty)::before {
-            margin-right: .5rem;
-        }
-        .divider:not(:empty)::after {
-            margin-left: .5rem;
-        }
-        .provider-btn {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-            background-color: white;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        .provider-btn:hover {
-            background-color: #f3f4f6;
-        }
-        .error-message {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            display: none;
-        }
-        .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #6c2bd9;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 1.5rem auto;
-            display: none;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
-    <!-- Login/Signup Form -->
+    <!-- Auth UI from Clerk -->
     <div class="auth-container" id="auth-container">
-        <h2 class="modal-title">Sign In or Sign Up</h2>
-        <form id="auth-form">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="Enter your email" required>
-                <div class="error-message" id="email-error"></div>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
-                <div class="error-message" id="password-error"></div>
-            </div>
-            <div class="spinner" id="form-spinner"></div>
-            <button type="submit" id="signin-email-btn" class="form-submit">Sign In</button>
-        </form>
-        
-        <div class="divider"><span>or</span></div>
-        
-        <button class="provider-btn" id="signin-google-btn">
-            <i class="fab fa-google text-red-500"></i> Sign in with Google
-        </button>
-
-        <div class="mt-4 text-sm text-center text-gray-500">
-            <a href="#" id="switch-to-signup" class="text-[#6c2bd9] font-semibold hover:underline">Create an account</a>
-        </div>
+        <clerk-sign-in class="w-full"></clerk-sign-in>
     </div>
 
-    <!-- Logged-in User Section -->
-    <div class="user-container" id="user-container">
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboard-container">
         <div class="user-avatar" id="user-avatar"></div>
         <h2 class="text-3xl font-bold text-gray-800 mb-2">Hello, <span id="user-name"></span>!</h2>
-        <p class="text-gray-500 mb-6">You are successfully logged in.</p>
-        <button id="signout-btn" class="form-submit w-auto px-6">Sign Out</button>
+        <p class="text-gray-500 mb-6">You have successfully logged in.</p>
+        <button id="signout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+            Sign Out
+        </button>
     </div>
-
 </div>
 
-<!-- Firebase SDKs -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyDYYx46KEkHSA78xHMo8lYS8tKqYrLZK-w",
-        authDomain: "skillpoint-c3e39.firebaseapp.com",
-        projectId: "skillpoint-c3e39",
-        storageBucket: "skillpoint-c3e39.firebasestorage.app",
-        messagingSenderId: "984664107678",
-        appId: "1:984664107678:web:af02e53e532d4e57f0298f",
-        measurementId: "G-390K2B4HC7"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // DOM Elements
+<script>
+    const clerkPublishableKey = 'pk_test_cGVhY2VmdWwtbGFtYi0xMS5jbGVyay5hY2NvdW50cy5kZXYk';
+</script>
+<script id="clerk-js" async data-clerk-publishable-key={clerkPublishableKey} src="https://clerk.my-edu-site-lemon.vercel.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+<script>
     const authContainer = document.getElementById('auth-container');
-    const userContainer = document.getElementById('user-container');
-    const authForm = document.getElementById('auth-form');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const signInEmailBtn = document.getElementById('signin-email-btn');
-    const signInGoogleBtn = document.getElementById('signin-google-btn');
-    const signoutBtn = document.getElementById('signout-btn');
+    const dashboardContainer = document.getElementById('dashboard-container');
     const userNameElement = document.getElementById('user-name');
     const userAvatarElement = document.getElementById('user-avatar');
-    const spinner = document.getElementById('form-spinner');
-    const emailError = document.getElementById('email-error');
-    const passwordError = document.getElementById('password-error');
-    const switchToSignupLink = document.getElementById('switch-to-signup');
+    const signoutButton = document.getElementById('signout-btn');
 
-    // Google Auth Provider
-    const googleProvider = new GoogleAuthProvider();
-
-    // Utility function to show and hide elements
-    const show = (el) => { if (el) el.style.display = 'block'; };
-    const hide = (el) => { if (el) el.style.display = 'none'; };
-    const showFlex = (el) => { if (el) el.style.display = 'flex'; };
-
-    // Display error message
-    const displayError = (element, message) => {
-        if (element) {
-            element.textContent = message;
-            show(element);
-        }
-    };
-
-    // Clear all error messages
-    const clearErrors = () => {
-        if (emailError) hide(emailError);
-        if (passwordError) hide(passwordError);
-    };
-
-    // Handle form submission for email/password auth
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearErrors();
-        show(spinner);
-        
-        const email = emailInput.value;
-        const password = passwordInput.value;
-        const isSignUp = signInEmailBtn.textContent === 'Create Account';
-
-        try {
-            if (isSignUp) {
-                await createUserWithEmailAndPassword(auth, email, password);
-                await setDoc(doc(db, "users", auth.currentUser.uid), {
-                    email,
-                    displayName: email.split('@')[0],
-                    createdAt: new Date()
-                });
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-            }
-        } catch (error) {
-            hide(spinner);
-            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                displayError(passwordError, 'Incorrect email or password.');
-            } else if (error.code === 'auth/email-already-in-use' || error.code === 'auth/invalid-email') {
-                displayError(emailError, error.message);
-            } else {
-                displayError(emailError, 'An unexpected error occurred. Please try again.');
-                console.error(error);
-            }
-        }
-    });
-
-    // Handle Google Sign-in
-    signInGoogleBtn.addEventListener('click', async () => {
-        try {
-            await signInWithPopup(auth, googleProvider);
-        } catch (error) {
-            console.error(error);
-        }
-    });
-
-    // Handle Sign Out
-    signoutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-    });
-
-    // Toggle between Sign In and Sign Up forms
-    switchToSignupLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        clearErrors();
-        const isSigningUp = signInEmailBtn.textContent === 'Create Account';
-        signInEmailBtn.textContent = isSigningUp ? 'Sign In' : 'Create Account';
-        switchToSignupLink.textContent = isSigningUp ? 'Create an account' : 'Already have an account?';
-        document.querySelector('.modal-title').textContent = isSigningUp ? 'Sign In or Sign Up' : 'Create Account';
-    });
-    
-    // Auth state listener
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            hide(authContainer);
-            showFlex(userContainer);
-            userNameElement.textContent = user.displayName || user.email.split('@')[0];
-            userAvatarElement.textContent = user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase();
+    Clerk.onMount(async (clerk) => {
+        if (clerk.user) {
+            // User is signed in, show dashboard
+            authContainer.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+            userNameElement.textContent = clerk.user.fullName || clerk.user.emailAddresses[0].emailAddress.split('@')[0];
+            userAvatarElement.textContent = clerk.user.fullName ? clerk.user.fullName.charAt(0) : clerk.user.emailAddresses[0].emailAddress.charAt(0);
         } else {
-            hide(userContainer);
-            show(authContainer);
-            hide(spinner);
-            authForm.reset();
-            clearErrors();
-            signInEmailBtn.textContent = 'Sign In';
-            switchToSignupLink.textContent = 'Create an account';
-            document.querySelector('.modal-title').textContent = 'Sign In or Sign Up';
+            // User is signed out, show auth container
+            authContainer.style.display = 'block';
+            dashboardContainer.style.display = 'none';
         }
     });
 
+    signoutButton.addEventListener('click', async () => {
+        await Clerk.signOut();
+        // Redirect to the login page
+        window.location.reload();
+    });
 </script>
 
 </body>
